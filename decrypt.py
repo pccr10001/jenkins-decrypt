@@ -10,7 +10,7 @@ from Crypto.Cipher import AES
 MAGIC = b"::::MAGIC::::"
 
 def usage():
-  print("./decrypt.py <master.key> <hudson.util.Secret> <credentials.xml>")
+  print("./decrypt.py <master.key> <hudson.util.Secret> (-p <Hash> || <credentials.xml>)")
   sys.exit(0)
 
 def decryptNewPassword(secret, p):
@@ -66,9 +66,12 @@ def main():
 
   secret = secret[:-16]
   secret = secret[:16]
-
-  credentials = open(sys.argv[3]).read()
-  passwords = re.findall(r'<p(?:assword|rivateKey)>\{?(.*?)\}?</p(?:assword|rivateKey)>', credentials)
+  passwords = []
+  if sys.argv[3] == "-p":
+    passwords.append(sys.argv[4])
+  else:
+    credentials = open(sys.argv[3]).read()
+    passwords = re.findall(r'<(?:password|privateKey|secret|apiToken)>\{?(.*?)\}?<\/(?:password|privateKey|secret|apiToken)', credentials)
 
   # You can find the password format at https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/util/Secret.java#L167-L216
 
